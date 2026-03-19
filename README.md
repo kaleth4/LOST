@@ -1,124 +1,171 @@
+<div align="center">
 
-🔍 Lost Data Retrieval (Recuperación de Datos Perdidos)
-Bienvenido a Lost Data Retrieval, una herramienta de análisis forense digital diseñada para recuperar archivos perdidos, eliminados o corruptos de dispositivos de almacenamiento. Este proyecto utiliza la técnica de File Carving, la cual ignora el sistema de archivos principal y busca directamente las "firmas" (Magic Numbers) de los archivos en crudo (raw data).
+```
+██╗      ██████╗ ███████╗████████╗    ██████╗  █████╗ ████████╗ █████╗ 
+██║     ██╔═══██╗██╔════╝╚══██╔══╝    ██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗
+██║     ██║   ██║███████╗   ██║       ██║  ██║███████║   ██║   ███████║
+██║     ██║   ██║╚════██║   ██║       ██║  ██║██╔══██║   ██║   ██╔══██║
+███████╗╚██████╔╝███████║   ██║       ██████╔╝██║  ██║   ██║   ██║  ██║
+╚══════╝ ╚═════╝ ╚══════╝   ╚═╝       ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
+              R E T R I E V A L   —   F I L E   C A R V I N G
+```
 
-Este proyecto es ideal para aprender sobre la estructura profunda de los archivos, la manipulación de bytes y los fundamentos de la recuperación de datos en ciberseguridad.
+![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white)
+![Category](https://img.shields.io/badge/Category-Forense%20Digital-green?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-lightgrey?style=for-the-badge&logo=linux)
+![Deps](https://img.shields.io/badge/Dependencias-Ninguna-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Estable-success?style=for-the-badge)
 
-✨ Características
-Recuperación sin Sistema de Archivos: Extrae datos basándose en el contenido del archivo, no en la tabla de asignación.
+> **Herramienta de análisis forense digital para recuperar archivos eliminados o corruptos.**  
+> Ignora el sistema de archivos — busca directamente las firmas hexadecimales en el raw data.
 
-Detección por Magic Numbers: Identifica cabeceras (headers) y pies (footers) específicos de tipos de archivos.
+</div>
 
-Soporte inicial para imágenes JPEG: Busca las firmas hexadecimales FF D8 FF (Inicio) y FF D9 (Fin).
+---
 
-Código ligero y educativo: Perfecto para entender cómo los sistemas operativos almacenan los datos a nivel de bytes.
+## 🧠 ¿Cómo funciona realmente?
 
-🚀 ¿Cómo funciona?
-Cuando "eliminas" un archivo de una unidad USB o disco duro, el sistema operativo generalmente solo borra la referencia a ese archivo, dejando los datos reales (los bytes) intactos hasta que sean sobrescritos por nueva información. Esta herramienta lee la imagen del disco byte a byte, buscando las firmas que indican el comienzo y el final de un archivo, y los "esculpe" (extrae) para guardarlos de forma segura.
+Cuando "eliminas" un archivo, el sistema operativo **no borra los datos** — solo elimina la referencia en la tabla de asignación. Los bytes siguen ahí hasta ser sobrescritos.
 
-🛠️ Requisitos Previos
-Python 3.8 o superior.
+```
+DISCO EN RAW:
+┌──────────────────────────────────────────────────────┐
+│ ...basura... FF D8 FF [datos JPEG] FF D9 ...basura.. │
+│              ▲ INICIO                ▲ FIN           │
+│              └──────── CARVING ──────┘               │
+└──────────────────────────────────────────────────────┘
+                          │
+                          ▼
+                recuperado_1.jpg ✅
+```
 
-Una imagen de disco en formato RAW (.img, .dd o .iso) o un archivo binario corrupto que contenga imágenes.
+La técnica se llama **File Carving**: escanea el disco byte a byte buscando **Magic Numbers** (firmas hexadecimales) que identifican el inicio y fin de cada tipo de archivo.
 
-💻 El Código del Programa (Python)
-A continuación se presenta el código fuente completo del proyecto (carver.py). No requiere dependencias externas, ya que utiliza las bibliotecas estándar de Python.
+---
 
-Python
-import os
-import sys
+## ✨ Características
 
-def recuperar_archivos(archivo_imagen, carpeta_salida):
-    """
-    Escanea un archivo binario o imagen de disco buscando firmas de archivos JPEG
-    y los recupera (File Carving).
-    """
-    # Firmas hexadecimales (Magic Numbers) para archivos JPEG
-    JPEG_INICIO = b'\xff\xd8\xff'
-    JPEG_FIN = b'\xff\xd9'
+| Feature | Descripción |
+|---------|-------------|
+| 🔍 **Sin dependencias del FS** | Extrae datos por contenido, no por tabla de asignación |
+| 🔢 **Magic Numbers** | Detecta cabeceras y footers hexadecimales de tipos de archivo |
+| 📸 **Soporte JPEG** | Busca firmas `FF D8 FF` (inicio) y `FF D9` (fin) |
+| ⚡ **Sin dependencias externas** | Solo librerías estándar de Python |
+| 📂 **Organización automática** | Guarda archivos recuperados en carpeta de salida nombrada |
 
-    # Verificar si la imagen existe
-    if not os.path.isfile(archivo_imagen):
-        print(f"[x] Error: No se encontró el archivo {archivo_imagen}")
-        return
+---
 
-    # Crear la carpeta de salida si no existe
-    if not os.path.exists(carpeta_salida):
-        os.makedirs(carpeta_salida)
-        print(f"[*] Carpeta de salida creada: {carpeta_salida}")
+## 🚀 Uso
 
-    print(f"[*] Iniciando escaneo profundo en: {archivo_imagen}...")
-    
-    try:
-        # Abrir el archivo en modo lectura binaria
-        with open(archivo_imagen, "rb") as f:
-            contenido_raw = f.read()
+```bash
+# Clonar el repositorio
+git clone https://github.com/kaleth4/lost-data-retrieval.git
+cd lost-data-retrieval
 
-        indice_actual = 0
-        archivos_recuperados = 0
+# Ejecutar (no requiere pip install)
+python3 carver.py
+```
 
-        while True:
-            # Buscar el inicio de un archivo JPEG
-            indice_inicio = contenido_raw.find(JPEG_INICIO, indice_actual)
-            
-            # Si no hay más inicios, terminamos
-            if indice_inicio == -1:
-                break
+El script te pedirá dos inputs:
 
-            # Buscar el final del archivo JPEG desde donde encontramos el inicio
-            indice_fin = contenido_raw.find(JPEG_FIN, indice_inicio)
-            
-            if indice_fin == -1:
-                # Se encontró un inicio pero no un final (archivo incompleto o corrupto)
-                break
+```
+Introduce la ruta del archivo/imagen a escanear: disco_corrupto.img
+Introduce el nombre de la carpeta de salida: datos_rescatados
+```
 
-            # Ajustar el índice para incluir los bytes de cierre de la firma (\xff\xd9)
-            indice_fin += len(JPEG_FIN)
+### Output esperado
 
-            # Extraer los bytes correspondientes al archivo
-            datos_archivo = contenido_raw[indice_inicio:indice_fin]
+```
+========================================
+   🔍 LOST DATA RETRIEVAL (CARVER) 🔍
+========================================
 
-            # Guardar el archivo recuperado
-            nombre_archivo = os.path.join(carpeta_salida, f"recuperado_{archivos_recuperados + 1}.jpg")
-            with open(nombre_archivo, "wb") as out_file:
-                out_file.write(datos_archivo)
+[*] Carpeta de salida creada: datos_rescatados
+[*] Iniciando escaneo profundo en: disco_corrupto.img...
 
-            print(f"  [+] ¡Archivo recuperado! Guardado como: {nombre_archivo} (Tamaño: {len(datos_archivo)} bytes)")
-            
-            # Actualizar contadores y continuar la búsqueda
-            archivos_recuperados += 1
-            indice_actual = indice_fin
+  [+] ¡Archivo recuperado! → recuperado_1.jpg  (Tamaño: 48320 bytes)
+  [+] ¡Archivo recuperado! → recuperado_2.jpg  (Tamaño: 71204 bytes)
+  [+] ¡Archivo recuperado! → recuperado_3.jpg  (Tamaño: 29847 bytes)
 
-        print("-" * 50)
-        print(f"[*] Escaneo completado. Total de archivos recuperados: {archivos_recuperados}")
+--------------------------------------------------
+[*] Escaneo completado. Total recuperados: 3
+```
 
-    except Exception as e:
-        print(f"[x] Ocurrió un error inesperado: {e}")
+---
 
-if __name__ == "__main__":
-    print("========================================")
-    print("   🔍 LOST DATA RETRIEVAL (CARVER) 🔍")
-    print("========================================\n")
-    
-    # Datos de ejemplo para la ejecución
-    print("Para probar este script, necesitas un archivo binario (ej. 'disco_corrupto.img')")
-    archivo_objetivo = input("Introduce la ruta del archivo/imagen a escanear: ")
-    directorio_salida = input("Introduce el nombre de la carpeta para guardar lo recuperado (ej. 'datos_rescatados'): ")
-    
-    print("\n")
-    recuperar_archivos(archivo_objetivo, directorio_salida)
-⚙️ Uso del Programa
-Guarda el código anterior en un archivo llamado carver.py.
+## 🧪 ¿Cómo generar un archivo de prueba?
 
-Para probarlo, puedes crear un archivo binario falso que contenga texto basura y un par de imágenes reales mezcladas, o usar un volcado de un pendrive USB antiguo (usando herramientas como dd en Linux).
+**Linux — volcado real de USB:**
+```bash
+# Crear imagen raw de un pendrive (reemplaza sdX con tu dispositivo)
+sudo dd if=/dev/sdX of=disco_prueba.img bs=512 status=progress
+python3 carver.py
+# → Imagen: disco_prueba.img
+```
 
-Ejecuta el script desde tu terminal:
+**Cualquier plataforma — archivo sintético:**
+```python
+# Genera un binario de prueba con imágenes mezcladas en basura
+with open("test.img", "wb") as f:
+    f.write(b'\x00' * 1024)                    # basura inicial
+    f.write(open("foto.jpg", "rb").read())     # JPEG real embebido
+    f.write(b'\x00' * 512)                     # basura intermedia
+    f.write(open("otra.jpg", "rb").read())     # segundo JPEG
+```
 
-Bash
-python carver.py
-El programa te pedirá la ruta del archivo a escanear y la carpeta donde quieres guardar los resultados.
+---
 
-Revisa la carpeta de salida para ver tus imágenes recuperadas. 🖼️
+## 📁 Estructura del proyecto
 
-⚠️ Aviso Legal y Ético
-Propósito Educativo: Esta herramienta ha sido desarrollada estrictamente con fines educativos y de investigación en ciberseguridad y análisis forense. No utilices herramientas de recuperación en dispositivos de los cuales no seas propietario o no tengas permiso explícito para auditar.
+```
+lost-data-retrieval/
+├── carver.py          # Script principal de file carving
+├── README.md          # Documentación
+└── datos_rescatados/  # Carpeta generada automáticamente al ejecutar
+    ├── recuperado_1.jpg
+    ├── recuperado_2.jpg
+    └── ...
+```
+
+---
+
+## 🗺️ Roadmap — Próximos formatos
+
+- [x] JPEG (`FF D8 FF` → `FF D9`)
+- [ ] PNG (`89 50 4E 47` → `49 45 4E 44 AE 42 60 82`)
+- [ ] PDF (`25 50 44 46` → `25 25 45 4F 46`)
+- [ ] ZIP / DOCX (`50 4B 03 04` → `50 4B 05 06`)
+- [ ] MP4 / MOV (atom `ftyp`)
+- [ ] Exportación de reporte en JSON
+- [ ] Soporte para escaneo por sectores (optimización RAM)
+- [ ] Interfaz de línea de comandos con `argparse`
+
+---
+
+## 📚 Conceptos que aprenderás
+
+```
+✔ Estructura interna de archivos a nivel de bytes
+✔ Magic Numbers y firmas hexadecimales
+✔ Manipulación de datos binarios en Python
+✔ Fundamentos de análisis forense digital
+✔ Cómo los SO gestionan la eliminación de archivos
+✔ Técnica de File Carving usada por herramientas como Autopsy y Foremost
+```
+
+---
+
+## ⚠️ Aviso legal
+
+> Esta herramienta fue desarrollada con fines estrictamente educativos y de investigación forense.  
+> Úsala únicamente en dispositivos de tu propiedad o con autorización explícita por escrito.  
+> El autor no se responsabiliza por uso indebido.
+
+---
+
+<div align="center">
+
+**Kaled Corcho** — [github.com/kaleth4](https://github.com/kaleth4)  
+`Cybersecurity Analyst Jr.` · `Digital Forensics` · `Blue Team`
+
+</div>
